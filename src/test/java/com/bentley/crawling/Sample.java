@@ -73,7 +73,28 @@ public class Sample {
         Elements tableElementList = document.select("table");
         Element tableElement = tableElementList.get(5);
 
-        Elements trElementList = tableElement.select("tr");
+        List<String> targetPageList = new ArrayList<String>();
+        Elements aElementList = tableElement.select("a");
+        for (Element aElement : aElementList) {
+            targetPageList.add("http://www.trade-seafood.com/directory/seafood/" + aElement.attr("href").replace("../", ""));
+        }
+
+        for (int i = 1 ; i <= 26 ; i++) {
+            String secondTarget = "http://www.trade-seafood.com/directory/seafood/importers/index" + i + ".htm";
+            Document secondDocument = Jsoup.connect(secondTarget).get();
+            Element secondTableElement = secondDocument.select("table").get(5);
+            Elements secondTargetList = secondTableElement.select("a");
+
+            for (Element element : secondTargetList) {
+                String secondElement = "http://www.trade-seafood.com/directory/seafood" + element.attr("href").replace("../", "");
+                targetPageList.add(secondElement);
+                System.out.println(secondElement);
+            }
+        }
+        targetPageList.size();
+
+        List<ExtractModel> extractModelList = extractForExcel(targetPageList);
+        makeExcelFile(extractModelList);
     }
 
     private List<String> extractSubTradeSeaFoodForSpecies(String url) throws Exception {
