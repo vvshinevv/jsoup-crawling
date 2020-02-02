@@ -86,12 +86,20 @@ public class Sample {
             Elements secondTargetList = secondTableElement.select("a");
 
             for (Element element : secondTargetList) {
-                String secondElement = "http://www.trade-seafood.com/directory/seafood" + element.attr("href").replace("../", "");
+
+                String secondElement;
+                if (element.attr("href").startsWith("..")) {
+                    secondElement = "http://www.trade-seafood.com/directory/seafood/" + element.attr("href").replace("../", "");
+                } else {
+                    secondElement = "http://www.trade-seafood.com/directory/seafood/importers/" + element.attr("href");
+                }
+
+
                 targetPageList.add(secondElement);
                 System.out.println(secondElement);
             }
         }
-        targetPageList.size();
+        System.out.println("크롤링 대상 페이지 개수 : " + targetPageList.size());
 
         List<ExtractModel> extractModelList = extractForExcel(targetPageList);
         makeExcelFile(extractModelList);
