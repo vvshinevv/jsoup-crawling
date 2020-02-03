@@ -41,6 +41,16 @@ public class Sample {
     }
 
     @Test
+    public void import_남은것() throws Exception {
+        Document document = Jsoup.connect("http://www.trade-seafood.com/directory/seafood/country/sri-lanka.htm").get();
+        Elements elements = document.select("table").get(5).getElementsByTag("a");
+        List<String> list = new ArrayList<String>();
+        addToParentCategoryForImport(list, elements);
+        List<ExtractModel> extractModelList = extractForExcel(list);
+        makeExcelFile(extractModelList);
+    }
+
+    @Test
     public void extractTradeSeaFoodForSpecies() throws Exception {
         Document document = Jsoup.connect("http://www.trade-seafood.com/directory/seafood/index.htm").get();
         Elements tableElementList = document.select("table");
@@ -69,18 +79,25 @@ public class Sample {
 
     @Test
     public void extractTradeSeaFoodForImportExport() throws Exception {
-        Document document = Jsoup.connect("http://www.trade-seafood.com/directory/seafood/importers/index.htm").get();
+        Document document = Jsoup.connect("http://www.trade-seafood.com/directory/seafood/producers/index.htm").get();
         Elements tableElementList = document.select("table");
         Element tableElement = tableElementList.get(5);
 
         List<String> targetPageList = new ArrayList<String>();
         Elements aElementList = tableElement.select("a");
         for (Element aElement : aElementList) {
-            targetPageList.add("http://www.trade-seafood.com/directory/seafood/" + aElement.attr("href").replace("../", ""));
+
+            if (aElement.attr("href").startsWith("..")) {
+                String attributeHref = "http://www.trade-seafood.com/directory/seafood/" + aElement.attr("href").replace("../", "");
+                targetPageList.add(attributeHref);
+            } else {
+                targetPageList.add("http://www.trade-seafood.com/directory/seafood/producers/" + aElement.attr("href"));
+            }
+
         }
 
-        for (int i = 1 ; i <= 26 ; i++) {
-            String secondTarget = "http://www.trade-seafood.com/directory/seafood/importers/index" + i + ".htm";
+        for (int i = 1; i <= 34; i++) {
+            String secondTarget = "http://www.trade-seafood.com/directory/seafood/producers/index" + i + ".htm";
             Document secondDocument = Jsoup.connect(secondTarget).get();
             Element secondTableElement = secondDocument.select("table").get(5);
             Elements secondTargetList = secondTableElement.select("a");
@@ -91,9 +108,8 @@ public class Sample {
                 if (element.attr("href").startsWith("..")) {
                     secondElement = "http://www.trade-seafood.com/directory/seafood/" + element.attr("href").replace("../", "");
                 } else {
-                    secondElement = "http://www.trade-seafood.com/directory/seafood/importers/" + element.attr("href");
+                    secondElement = "http://www.trade-seafood.com/directory/seafood/producers/" + element.attr("href");
                 }
-
 
                 targetPageList.add(secondElement);
                 System.out.println(secondElement);
@@ -141,6 +157,17 @@ public class Sample {
                 String attributeHref = "http://www.trade-seafood.com/directory/seafood/country/" + element.attr("href");
                 parentCategoryUrlList.add(attributeHref);
             }
+        }
+    }
+
+    private void addToParentCategoryForImport(List<String> parentCategoryUrlList, Elements aElementList) {
+        for (Element element : aElementList) {
+
+            if (!element.attr("href").startsWith("http")) {
+                String attributeHref = "http://www.trade-seafood.com/directory/seafood/" + element.attr("href").replace("../", "");
+                parentCategoryUrlList.add(attributeHref);
+            }
+
         }
     }
 
